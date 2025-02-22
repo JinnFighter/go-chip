@@ -61,6 +61,14 @@ func loop() {
 			return
 		case t := <-ticker.C:
 			fmt.Println("Tick at ", t)
+			var nextInstruction = programCounter
+			fmt.Println("Next instruction counter: ", nextInstruction)
+			programCounter += 2
+			decodeInstruction(nextInstruction)
 		}
 	}
+}
+
+func decodeInstruction(instructionBytes uint16) {
+
 }
