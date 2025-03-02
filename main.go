@@ -158,6 +158,30 @@ func decodeInstruction(instructionBytes uint16) {
 		var idx = int((instructionBytes & 0x0F00) >> 8)
 		var value = uint8(instructionBytes & 0x00FF)
 		Add_7XNN(idx, value)
+	case 0x8000:
+		var xIdx = int((instructionBytes & 0x0F00) >> 8)
+		var yIdx = int((instructionBytes & 0x00F0) >> 4)
+		var lastByte = instructionBytes & 0x000F
+		switch lastByte {
+		case 0x0000:
+			Set_8XY0(xIdx, yIdx)
+		case 0x0001:
+			Binary_OR_8XY1(xIdx, yIdx)
+		case 0x0002:
+			Binary_AND_8XY2(xIdx, yIdx)
+		case 0x0003:
+			Binary_XOR_8XY3(xIdx, yIdx)
+		case 0x0004:
+			Add_8XY4(xIdx, yIdx)
+		case 0x0005:
+			Subtract_8XY5(xIdx, yIdx)
+		case 0x0006:
+			Shift_8XY6(xIdx, yIdx)
+		case 0x0007:
+			Subtract_8XY7(xIdx, yIdx)
+		case 0x000E:
+			Shift_8XYE(xIdx, yIdx)
+		}
 	case 0x9000:
 		var xIdx = int((instructionBytes & 0x0F00) >> 8)
 		var yIdx = int((instructionBytes & 0x00F0) >> 4)
@@ -273,5 +297,92 @@ func Skip_conditionally_9XY0(xIdx int, yIdx int) {
 	var yValue = vRegisters[yIdx]
 	if xValue != yValue {
 		programCounter += 2
+	}
+}
+
+func Set_8XY0(xIdx int, yIdx int) {
+	var yValue = vRegisters[yIdx]
+	vRegisters[xIdx] = yValue
+}
+
+func Binary_OR_8XY1(xIdx int, yIdx int) {
+	var yValue = vRegisters[xIdx] | vRegisters[yIdx]
+	vRegisters[xIdx] = yValue
+}
+
+func Binary_AND_8XY2(xIdx int, yIdx int) {
+	var yValue = vRegisters[xIdx] & vRegisters[yIdx]
+	vRegisters[xIdx] = yValue
+}
+
+func Binary_XOR_8XY3(xIdx int, yIdx int) {
+	var yValue = vRegisters[xIdx] ^ vRegisters[yIdx]
+	vRegisters[xIdx] = yValue
+}
+
+func Add_8XY4(xIdx int, yIdx int) {
+	var xValue = vRegisters[xIdx]
+	var yValue = vRegisters[yIdx]
+	var isCarryFlagSet = (int(xValue) + int(yValue)) > 255
+	vRegisters[xIdx] = xValue + yValue
+
+	if isCarryFlagSet {
+		vRegisters[15] = 1
+	} else {
+		vRegisters[15] = 0
+	}
+}
+
+func Subtract_8XY5(xIdx int, yIdx int) {
+	var xValue = vRegisters[xIdx]
+	var yValue = vRegisters[yIdx]
+	var isCarryFlagSet = xValue >= yValue
+	vRegisters[xIdx] = xValue - yValue
+
+	if isCarryFlagSet {
+		vRegisters[15] = 1
+	} else {
+		vRegisters[15] = 0
+	}
+}
+
+func Subtract_8XY7(xIdx int, yIdx int) {
+	var xValue = vRegisters[xIdx]
+	var yValue = vRegisters[yIdx]
+	var isCarryFlagSet = yValue >= xValue
+	vRegisters[xIdx] = yValue - xValue
+
+	if isCarryFlagSet {
+		vRegisters[15] = 1
+	} else {
+		vRegisters[15] = 0
+	}
+}
+
+func Shift_8XY6(xIdx int, yIdx int) {
+	var xValue = vRegisters[xIdx]
+	var newValue = xValue >> 2
+	var shiftedBit = xValue & (1 << uint(7))
+	vRegisters[xIdx] = newValue
+	var isCarryFlagSet = shiftedBit > 0
+
+	if isCarryFlagSet {
+		vRegisters[15] = 1
+	} else {
+		vRegisters[15] = 0
+	}
+}
+
+func Shift_8XYE(xIdx int, yIdx int) {
+	var xValue = vRegisters[xIdx]
+	var newValue = xValue << 2
+	var shiftedBit = xValue & 0x00F
+	vRegisters[xIdx] = newValue
+	var isCarryFlagSet = shiftedBit > 0
+
+	if isCarryFlagSet {
+		vRegisters[15] = 1
+	} else {
+		vRegisters[15] = 0
 	}
 }
