@@ -126,10 +126,18 @@ func decodeInstruction(instructionBytes uint16) {
 	var firstByte = instructionBytes & 0xF000
 	switch firstByte {
 	case 0x0000:
-		ClearScreen_00E0()
+		var lastByte = instructionBytes & 0x000F
+		if lastByte == 0 {
+			ClearScreen_00E0()
+		} else {
+			Subroutine_00EE()
+		}
 	case 0x1000:
 		var jumpAddress = instructionBytes & 0x0FFF
 		Jump_1NNN(jumpAddress)
+	case 0x2000:
+		var address = instructionBytes & 0x0FFF
+		Subroutine_2NNN(address)
 	case 0x6000:
 		var idx = int((instructionBytes & 0x0F00) >> 8)
 		var value = uint8(instructionBytes & 0x00FF)
@@ -210,4 +218,14 @@ func Display_DXYN(xRegister int, yRegister int, spriteHeight int) {
 	}
 
 	//fmt.Printf("DXYN_Display at xReg %d, yReg %d, height %d \n", xRegister, yRegister, spriteHeight)
+}
+
+func Subroutine_2NNN(value uint16) {
+	addressStack.Push(programCounter)
+	programCounter = value
+}
+
+func Subroutine_00EE() {
+	var address = addressStack.Pop()
+	programCounter = address
 }
