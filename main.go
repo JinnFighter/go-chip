@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"go-chip/extensions"
+	"math/rand"
 	"os"
 	"os/exec"
 	"time"
@@ -192,6 +193,10 @@ func decodeInstruction(instructionBytes uint16) {
 	case 0xB000:
 		var address = instructionBytes & 0x0FFF
 		Jump_With_Offset_BNNN(address)
+	case 0xC000:
+		var idx = int((instructionBytes & 0x0F00) >> 8)
+		var value = uint8(instructionBytes & 0x00FF)
+		Random_CXNN(idx, value)
 	case 0xD000:
 		var xRegister = int((instructionBytes & 0x0F00) >> 8)
 		var yRegister = int((instructionBytes & 0x00F0) >> 4)
@@ -392,4 +397,10 @@ func Shift_8XYE(xIdx int, yIdx int) {
 
 func Jump_With_Offset_BNNN(address uint16) {
 	programCounter = address + uint16(vRegisters[0])
+}
+
+func Random_CXNN(xIdx int, value uint8) {
+	var rand = uint8(rand.Intn(256))
+	var newValue = rand & value
+	vRegisters[xIdx] = newValue
 }
