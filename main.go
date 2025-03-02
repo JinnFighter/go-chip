@@ -138,6 +138,18 @@ func decodeInstruction(instructionBytes uint16) {
 	case 0x2000:
 		var address = instructionBytes & 0x0FFF
 		Subroutine_2NNN(address)
+	case 0x3000:
+		var idx = int((instructionBytes & 0x0F00) >> 8)
+		var value = uint8(instructionBytes & 0x00FF)
+		Skip_conditionally_3XNN(idx, value)
+	case 0x4000:
+		var idx = int((instructionBytes & 0x0F00) >> 8)
+		var value = uint8(instructionBytes & 0x00FF)
+		Skip_conditionally_4XNN(idx, value)
+	case 0x5000:
+		var xIdx = int((instructionBytes & 0x0F00) >> 8)
+		var yIdx = int((instructionBytes & 0x00F0) >> 4)
+		Skip_conditionally_5XY0(xIdx, yIdx)
 	case 0x6000:
 		var idx = int((instructionBytes & 0x0F00) >> 8)
 		var value = uint8(instructionBytes & 0x00FF)
@@ -146,6 +158,10 @@ func decodeInstruction(instructionBytes uint16) {
 		var idx = int((instructionBytes & 0x0F00) >> 8)
 		var value = uint8(instructionBytes & 0x00FF)
 		Add_7XNN(idx, value)
+	case 0x9000:
+		var xIdx = int((instructionBytes & 0x0F00) >> 8)
+		var yIdx = int((instructionBytes & 0x00F0) >> 4)
+		Skip_conditionally_9XY0(xIdx, yIdx)
 	case 0xA000:
 		var value = instructionBytes & 0x0FFF
 		SetIndex_ANNN(value)
@@ -228,4 +244,34 @@ func Subroutine_2NNN(value uint16) {
 func Subroutine_00EE() {
 	var address = addressStack.Pop()
 	programCounter = address
+}
+
+func Skip_conditionally_3XNN(idx int, value uint8) {
+	var registerValue = vRegisters[idx]
+	if registerValue == value {
+		programCounter += 2
+	}
+}
+
+func Skip_conditionally_4XNN(idx int, value uint8) {
+	var registerValue = vRegisters[idx]
+	if registerValue != value {
+		programCounter += 2
+	}
+}
+
+func Skip_conditionally_5XY0(xIdx int, yIdx int) {
+	var xValue = vRegisters[xIdx]
+	var yValue = vRegisters[yIdx]
+	if xValue == yValue {
+		programCounter += 2
+	}
+}
+
+func Skip_conditionally_9XY0(xIdx int, yIdx int) {
+	var xValue = vRegisters[xIdx]
+	var yValue = vRegisters[yIdx]
+	if xValue != yValue {
+		programCounter += 2
+	}
 }
