@@ -189,6 +189,9 @@ func decodeInstruction(instructionBytes uint16) {
 	case 0xA000:
 		var value = instructionBytes & 0x0FFF
 		SetIndex_ANNN(value)
+	case 0xB000:
+		var address = instructionBytes & 0x0FFF
+		Jump_With_Offset_BNNN(address)
 	case 0xD000:
 		var xRegister = int((instructionBytes & 0x0F00) >> 8)
 		var yRegister = int((instructionBytes & 0x00F0) >> 4)
@@ -385,4 +388,8 @@ func Shift_8XYE(xIdx int, yIdx int) {
 	} else {
 		vRegisters[15] = 0
 	}
+}
+
+func Jump_With_Offset_BNNN(address uint16) {
+	programCounter = address + uint16(vRegisters[0])
 }
