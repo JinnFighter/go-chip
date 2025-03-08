@@ -27,10 +27,11 @@ func (s *Stack) Top() (uint16, error) {
 }
 
 func (s *Stack) IsEmpty() bool {
-	if len(s.items) == 0 {
-		return true
-	}
-	return false
+	return len(s.items) == 0
+}
+
+func (s *Stack) Count() int {
+	return len(s.items)
 }
 
 func (s *Stack) Print() {

@@ -94,7 +94,7 @@ func main() {
 
 	for i := range height {
 		for j := range width {
-			displayRects[j][i] = sdl.Rect{X: int32(j * 10), Y: int32(i * 10), W: 10, H: 10}
+			displayRects[j][i] = sdl.Rect{X: int32(j * 10), Y: int32(i * 10), W: 7, H: 7}
 		}
 	}
 
@@ -264,6 +264,8 @@ func decodeInstruction(instructionBytes uint16) {
 		switch lastBytes {
 		case 0x000A:
 			Get_Key_FX0A(idx)
+		case 0x001E:
+			Add_To_Index_FX1E(idx)
 		case 0x0033:
 			Binary_Coded_Decimal_Conversion_FX33(idx)
 		case 0x0055:
@@ -282,20 +284,20 @@ func ClearScreen_00E0() {
 			display[i][j] = false
 		}
 	}
-	//fmt.Printf("00E0_ClearScreen\n")
+	fmt.Printf("00E0_ClearScreen\n")
 }
 
 func Jump_1NNN(jumpAddress uint16) {
-	//var oldAddress = programCounter
+	var oldAddress = programCounter
 	programCounter = jumpAddress
-	//fmt.Printf("1NNN_Jump, old address: %d, new address: %d \n", oldAddress, jumpAddress)
+	fmt.Printf("1NNN_Jump, old address: %d, new address: %d \n", oldAddress, jumpAddress)
 }
 
 func Set_6XNN(idx int, value uint8) {
-	//var oldValue = vRegisters[idx]
+	var oldValue = vRegisters[idx]
 	var newValue = value
 	vRegisters[idx] = newValue
-	//fmt.Printf("6XNN_Set, idx %d, OldValue %d, new value %d \n", idx, oldValue, newValue)
+	fmt.Printf("6XNN_Set, idx %d, OldValue %d, new value %d \n", idx, oldValue, newValue)
 }
 
 func Add_7XNN(idx int, value uint8) {
@@ -303,14 +305,14 @@ func Add_7XNN(idx int, value uint8) {
 	var newValue = oldValue + value
 
 	vRegisters[idx] = newValue
-	//fmt.Printf("7XNN_Add, idx %d, oldValue %d, new value %d \n", idx, oldValue, newValue)
+	fmt.Printf("7XNN_Add, idx %d, oldValue %d, new value %d \n", idx, oldValue, newValue)
 }
 
 func SetIndex_ANNN(value uint16) {
-	//var oldValue = indexRegister
+	var oldValue = indexRegister
 	var newValue = value
 	indexRegister = newValue
-	//fmt.Printf("ANNN_SetIndex, oldValue %d, new value %d \n", oldValue, newValue)
+	fmt.Printf("ANNN_SetIndex, oldValue %d, new value %d \n", oldValue, newValue)
 }
 
 func Display_DXYN(xRegister int, yRegister int, spriteHeight int) {
@@ -334,17 +336,20 @@ func Display_DXYN(xRegister int, yRegister int, spriteHeight int) {
 		}
 	}
 
-	//fmt.Printf("DXYN_Display at xReg %d, yReg %d, height %d \n", xRegister, yRegister, spriteHeight)
+	fmt.Printf("DXYN_Display at xReg %d, yReg %d, height %d \n", xRegister, yRegister, spriteHeight)
 }
 
 func Subroutine_2NNN(value uint16) {
 	addressStack.Push(programCounter)
 	programCounter = value
+	fmt.Printf("2NNN_Subroutine, value: %b, stackCount: %d \n", value, addressStack.Count())
 }
 
 func Subroutine_00EE() {
 	var address = addressStack.Pop()
 	programCounter = address
+
+	fmt.Printf("00EE_Subroutine, stackCount: %d \n", addressStack.Count())
 }
 
 func Skip_conditionally_3XNN(idx int, value uint8) {
@@ -352,6 +357,8 @@ func Skip_conditionally_3XNN(idx int, value uint8) {
 	if registerValue == value {
 		programCounter += 2
 	}
+
+	fmt.Printf("3XNN_Skip_conditionally, idx: %d, registerValue: %b, value: %b \n", idx, registerValue, value)
 }
 
 func Skip_conditionally_4XNN(idx int, value uint8) {
@@ -359,6 +366,8 @@ func Skip_conditionally_4XNN(idx int, value uint8) {
 	if registerValue != value {
 		programCounter += 2
 	}
+
+	fmt.Printf("4XNN_Skip_conditionally, idx: %d, registerValue: %b, value: %b \n", idx, registerValue, value)
 }
 
 func Skip_conditionally_5XY0(xIdx int, yIdx int) {
@@ -367,6 +376,8 @@ func Skip_conditionally_5XY0(xIdx int, yIdx int) {
 	if xValue == yValue {
 		programCounter += 2
 	}
+
+	fmt.Printf("5XY0_Skip_conditionally, xIdx: %d, yIdx: %d, xRegisterValue: %b, yRegisterValue: %b \n", xIdx, yIdx, xValue, yValue)
 }
 
 func Skip_conditionally_9XY0(xIdx int, yIdx int) {
@@ -375,26 +386,42 @@ func Skip_conditionally_9XY0(xIdx int, yIdx int) {
 	if xValue != yValue {
 		programCounter += 2
 	}
+
+	fmt.Printf("9XY0_Skip_conditionally, xIdx: %d, yIdx: %d, xRegisterValue: %b, yRegisterValue: %b \n", xIdx, yIdx, xValue, yValue)
 }
 
 func Set_8XY0(xIdx int, yIdx int) {
+	var xValue = vRegisters[xIdx]
 	var yValue = vRegisters[yIdx]
 	vRegisters[xIdx] = yValue
+
+	fmt.Printf("8XY0_Set, xIdx: %d, yIdx: %d, xRegisterValue: %b, yRegisterValue: %b, new xRegisterValue: %b \n", xIdx, yIdx, xValue, yValue, vRegisters[xIdx])
 }
 
 func Binary_OR_8XY1(xIdx int, yIdx int) {
-	var yValue = vRegisters[xIdx] | vRegisters[yIdx]
-	vRegisters[xIdx] = yValue
+	var xValue = vRegisters[xIdx]
+	var yValue = vRegisters[yIdx]
+	var newValue = xValue | yValue
+	vRegisters[xIdx] = newValue
+
+	fmt.Printf("8XY1_Binary_OR, xIdx: %d, yIdx: %d, xValue: %b, yValue: %b, newValue: %b, newXRegisterValue: %b \n", xIdx, yIdx, xValue, yValue, newValue, vRegisters[xIdx])
 }
 
 func Binary_AND_8XY2(xIdx int, yIdx int) {
-	var yValue = vRegisters[xIdx] & vRegisters[yIdx]
-	vRegisters[xIdx] = yValue
+	var xValue = vRegisters[xIdx]
+	var yValue = vRegisters[yIdx]
+	var newValue = xValue & yValue
+	vRegisters[xIdx] = newValue
+	fmt.Printf("8XY2_Binary_AND, xIdx: %d, yIdx: %d, xValue: %b, yValue: %b, newValue: %b, newXRegisterValue: %b \n", xIdx, yIdx, xValue, yValue, newValue, vRegisters[xIdx])
 }
 
 func Binary_XOR_8XY3(xIdx int, yIdx int) {
-	var yValue = vRegisters[xIdx] ^ vRegisters[yIdx]
-	vRegisters[xIdx] = yValue
+	var xValue = vRegisters[xIdx]
+	var yValue = vRegisters[yIdx]
+	var newValue = xValue ^ yValue
+	vRegisters[xIdx] = newValue
+
+	fmt.Printf("8XY3_Binary_XOR, xIdx: %d, yIdx: %d, xValue: %b, yValue: %b, newValue: %b, newXRegisterValue: %b \n", xIdx, yIdx, xValue, yValue, newValue, vRegisters[xIdx])
 }
 
 func Add_8XY4(xIdx int, yIdx int) {
@@ -439,7 +466,7 @@ func Subtract_8XY7(xIdx int, yIdx int) {
 func Shift_Right_8XY6(xIdx int, yIdx int) {
 	var xValue = vRegisters[xIdx]
 	var newValue = xValue >> 1
-	var shiftedBit = xValue & (1 << uint(7))
+	var shiftedBit = xValue & 0x1
 	vRegisters[xIdx] = newValue
 	var isCarryFlagSet = shiftedBit > 0
 
@@ -455,7 +482,7 @@ func Shift_Right_8XY6(xIdx int, yIdx int) {
 func Shift_Left_8XYE(xIdx int, yIdx int) {
 	var xValue = vRegisters[xIdx]
 	var newValue = xValue << 1
-	var shiftedBit = xValue & 0x00F
+	var shiftedBit = xValue >> 7
 	vRegisters[xIdx] = newValue
 	var isCarryFlagSet = shiftedBit > 0
 
@@ -523,13 +550,30 @@ func Binary_Coded_Decimal_Conversion_FX33(idx int) {
 }
 
 func Store_Memory_FX55(idx int) {
+	fmt.Print("FX55_Store_Memory ")
 	for i := range idx + 1 {
 		memory[indexRegister+uint16(i)] = vRegisters[i]
+		fmt.Printf("idx: %d, memloc: %d, value %d;", idx, indexRegister+uint16(i), vRegisters[i])
 	}
+	fmt.Println()
 }
 
 func Load_Memory_FX65(idx int) {
+	fmt.Print("FX65_Load_Memory ")
 	for i := range idx + 1 {
 		vRegisters[i] = memory[indexRegister+uint16(i)]
+		fmt.Printf("idx: %d, memloc: %d, value %d;", idx, indexRegister+uint16(i), memory[indexRegister+uint16(i)])
+	}
+	fmt.Println()
+}
+
+func Add_To_Index_FX1E(idx int) {
+	var val = uint16(vRegisters[idx])
+	var isOverFlow = val > indexRegister
+	indexRegister += val
+	if isOverFlow {
+		vRegisters[15] = 1
+	} else {
+		vRegisters[15] = 0
 	}
 }
