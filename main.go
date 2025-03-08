@@ -264,6 +264,10 @@ func decodeInstruction(instructionBytes uint16) {
 		switch lastBytes {
 		case 0x000A:
 			Get_Key_FX0A(idx)
+		case 0x0055:
+			Store_Memory_FX55(idx)
+		case 0x0065:
+			Load_Memory_FX65(idx)
 		}
 	default:
 		fmt.Printf("Unknown Command\n")
@@ -497,5 +501,17 @@ func Get_Key_FX0A(idx int) {
 		vRegisters[idx] = uint8(currentPressed)
 	} else {
 		programCounter -= 2
+	}
+}
+
+func Store_Memory_FX55(idx int) {
+	for i := range idx + 1 {
+		memory[indexRegister+uint16(i)] = vRegisters[i]
+	}
+}
+
+func Load_Memory_FX65(idx int) {
+	for i := range idx + 1 {
+		vRegisters[i] = memory[indexRegister+uint16(i)]
 	}
 }
