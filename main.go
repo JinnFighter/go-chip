@@ -264,6 +264,8 @@ func decodeInstruction(instructionBytes uint16) {
 		switch lastBytes {
 		case 0x000A:
 			Get_Key_FX0A(idx)
+		case 0x0033:
+			Binary_Coded_Decimal_Conversion_FX33(idx)
 		case 0x0055:
 			Store_Memory_FX55(idx)
 		case 0x0065:
@@ -501,6 +503,18 @@ func Get_Key_FX0A(idx int) {
 		vRegisters[idx] = uint8(currentPressed)
 	} else {
 		programCounter -= 2
+	}
+}
+
+func Binary_Coded_Decimal_Conversion_FX33(idx int) {
+	var val = vRegisters[idx]
+	var indexRegisterOffset = 0
+	var divider = 100
+	for divider > 0 {
+		memory[indexRegister+uint16(indexRegisterOffset)] = val / uint8(divider)
+		indexRegisterOffset += 1
+		val %= uint8(divider)
+		divider /= 10
 	}
 }
 
