@@ -224,11 +224,11 @@ func decodeInstruction(instructionBytes uint16) {
 		case 0x0005:
 			Subtract_8XY5(xIdx, yIdx)
 		case 0x0006:
-			Shift_8XY6(xIdx, yIdx)
+			Shift_Right_8XY6(xIdx, yIdx)
 		case 0x0007:
 			Subtract_8XY7(xIdx, yIdx)
 		case 0x000E:
-			Shift_8XYE(xIdx, yIdx)
+			Shift_Left_8XYE(xIdx, yIdx)
 		}
 	case 0x9000:
 		var xIdx = int((instructionBytes & 0x0F00) >> 8)
@@ -436,9 +436,9 @@ func Subtract_8XY7(xIdx int, yIdx int) {
 	}
 }
 
-func Shift_8XY6(xIdx int, yIdx int) {
+func Shift_Right_8XY6(xIdx int, yIdx int) {
 	var xValue = vRegisters[xIdx]
-	var newValue = xValue >> 2
+	var newValue = xValue >> 1
 	var shiftedBit = xValue & (1 << uint(7))
 	vRegisters[xIdx] = newValue
 	var isCarryFlagSet = shiftedBit > 0
@@ -448,11 +448,13 @@ func Shift_8XY6(xIdx int, yIdx int) {
 	} else {
 		vRegisters[15] = 0
 	}
+
+	fmt.Printf("8XY6, X = %d, Y = %d, xValue: %b, newValue: %b, shiftedBit: %b, isCarryFlagSet: %t, \n", xIdx, yIdx, xValue, newValue, shiftedBit, isCarryFlagSet)
 }
 
-func Shift_8XYE(xIdx int, yIdx int) {
+func Shift_Left_8XYE(xIdx int, yIdx int) {
 	var xValue = vRegisters[xIdx]
-	var newValue = xValue << 2
+	var newValue = xValue << 1
 	var shiftedBit = xValue & 0x00F
 	vRegisters[xIdx] = newValue
 	var isCarryFlagSet = shiftedBit > 0
@@ -462,6 +464,8 @@ func Shift_8XYE(xIdx int, yIdx int) {
 	} else {
 		vRegisters[15] = 0
 	}
+
+	fmt.Printf("8XYE, X = %d, Y = %d, xValue: %b, newValue: %b, shiftedBit: %b, isCarryFlagSet: %t, \n", xIdx, yIdx, xValue, newValue, shiftedBit, isCarryFlagSet)
 }
 
 func Jump_With_Offset_BNNN(address uint16) {
