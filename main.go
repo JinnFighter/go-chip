@@ -264,6 +264,12 @@ func decodeInstruction(instructionBytes uint16) {
 		switch lastBytes {
 		case 0x000A:
 			Get_Key_FX0A(idx)
+		case 0x0007:
+			Get_Value_Of_Delay_Timer_FX07(idx)
+		case 0x0015:
+			Set_Delay_Timer_FX15(idx)
+		case 0x0018:
+			Set_Sound_Timer_FX18(idx)
 		case 0x001E:
 			Add_To_Index_FX1E(idx)
 		case 0x0033:
@@ -510,6 +516,8 @@ func Skip_If_Key_EX9E(idx int) {
 	if keyPressed[keyVal] {
 		programCounter += 2
 	}
+
+	fmt.Printf("EX9E_Skip_If_Key, idx: %d, keyVal: %d, isPressed: %t\n", idx, keyVal, keyPressed[keyVal])
 }
 
 func Skip_If_Not_Key_EXA1(idx int) {
@@ -517,6 +525,8 @@ func Skip_If_Not_Key_EXA1(idx int) {
 	if !keyPressed[keyVal] {
 		programCounter += 2
 	}
+
+	fmt.Printf("EXA1_Skip_If_Not_Key, idx: %d, keyVal: %d, isPressed: %t\n", idx, keyVal, keyPressed[keyVal])
 }
 
 func Get_Key_FX0A(idx int) {
@@ -535,6 +545,8 @@ func Get_Key_FX0A(idx int) {
 	} else {
 		programCounter -= 2
 	}
+
+	fmt.Printf("FX0A_Get_Key, idx: %d, keyVal: %d, isPressed: %t\n", idx, currentPressed, isPressed)
 }
 
 func Binary_Coded_Decimal_Conversion_FX33(idx int) {
@@ -576,4 +588,25 @@ func Add_To_Index_FX1E(idx int) {
 	} else {
 		vRegisters[15] = 0
 	}
+}
+
+func Get_Value_Of_Delay_Timer_FX07(idx int) {
+	var oldValue = vRegisters[idx]
+	vRegisters[idx] = delayTimer
+
+	fmt.Printf("FX07_Get_Value_Of_Delay_Timer, old value: %d, currentDelayTimer: %d, newValue: %d\n", oldValue, delayTimer, vRegisters[idx])
+}
+
+func Set_Delay_Timer_FX15(idx int) {
+	var oldValue = delayTimer
+	var newValue = vRegisters[idx]
+	delayTimer = newValue
+	fmt.Printf("FX15_Set_Delay_Timer, old value: %d, currentDelayTimer: %d, newValue: %d\n", oldValue, delayTimer, newValue)
+}
+
+func Set_Sound_Timer_FX18(idx int) {
+	var oldValue = soundTimer
+	var newValue = vRegisters[idx]
+	soundTimer = newValue
+	fmt.Printf("FX18_Set_Sound_Timer, old value: %d, currentSoundTimer: %d, newValue: %d\n", oldValue, soundTimer, newValue)
 }
