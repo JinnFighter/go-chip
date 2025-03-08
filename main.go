@@ -125,6 +125,13 @@ func loop() {
 	fmt.Println("Enter loop")
 
 	for {
+		if delayTimer > 0 {
+			delayTimer -= 1
+		}
+
+		if soundTimer > 0 {
+			soundTimer -= 1
+		}
 		inputLoop()
 		if !isRunning {
 			return
@@ -144,7 +151,7 @@ func loop() {
 		}
 
 		window.UpdateSurface()
-		sdl.Delay(1000 / 60)
+		sdl.Delay(1000 / 700)
 	}
 }
 
