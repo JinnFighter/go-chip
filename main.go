@@ -5,8 +5,6 @@ import (
 	"go-chip/extensions"
 	"math/rand"
 	"os"
-	"os/exec"
-	"time"
 
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -20,6 +18,9 @@ const spriteWidth = 8
 
 var memory [4096]byte
 var display [width][height]bool
+var displayRects [width][height]sdl.Rect
+var blackColor = sdl.Color{R: 0, G: 0, B: 0, A: 255}
+var whiteColor = sdl.Color{R: 255, G: 255, B: 255, A: 255}
 var vRegisters [16]uint8
 var indexRegister uint16
 var programCounter uint16
@@ -27,9 +28,9 @@ var addressStack extensions.Stack
 var delayTimer uint8
 var soundTimer uint8
 var keyPressed [16]bool
+var window *sdl.Window
+var windowSurface *sdl.Surface
 var isRunning bool
-var ticker *time.Ticker
-var tickerChannel chan bool
 var keysBytes = map[sdl.Keycode]uint8{
 	sdl.K_1: 0x1,
 	sdl.K_2: 0x2,
@@ -87,10 +88,19 @@ func main() {
 	}
 	programCounter = 0x200
 
-	startLoop()
-	for isRunning {
+	window, _ = sdl.CreateWindow("Go-Chip by JinnFighter", sdl.WINDOWPOS_CENTERED, sdl.WINDOWPOS_CENTERED, 640, 320, sdl.WINDOW_SHOWN)
+	windowSurface, _ = window.GetSurface()
+	windowSurface.FillRect(nil, 0)
 
+	for i := range height {
+		for j := range width {
+			displayRects[j][i] = sdl.Rect{X: int32(j * 10), Y: int32(i * 10), W: 10, H: 10}
+		}
 	}
+
+	startLoop()
+
+	window.Destroy()
 }
 
 func startLoop() {
@@ -99,11 +109,8 @@ func startLoop() {
 	}
 
 	isRunning = true
-	var execSpeed = 1 / instructionExecutionSpeed * float64(time.Second)
-	ticker = time.NewTicker(time.Duration(execSpeed))
-	tickerChannel = make(chan bool)
 
-	go loop()
+	loop()
 }
 
 func stopLoop() {
@@ -112,17 +119,44 @@ func stopLoop() {
 	}
 
 	isRunning = false
-	ticker.Stop()
-	tickerChannel <- true
 }
 
 func loop() {
 	fmt.Println("Enter loop")
+
+	for {
+		inputLoop()
+		if !isRunning {
+			return
+		}
+		var nextInstruction = (uint16(memory[programCounter]) << 8) | uint16(memory[programCounter+1])
+		programCounter += 2
+		decodeInstruction(nextInstruction)
+
+		for i := range height {
+			for j := range width {
+				if display[j][i] {
+					windowSurface.FillRect(&displayRects[j][i], whiteColor.Uint32())
+				} else {
+					windowSurface.FillRect(&displayRects[j][i], blackColor.Uint32())
+				}
+			}
+		}
+
+		window.UpdateSurface()
+		sdl.Delay(1000 / 60)
+	}
+}
+
+func inputLoop() {
+	if !isRunning {
+		return
+	}
 	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 		switch et := event.(type) {
 		case *sdl.QuitEvent:
 			stopLoop()
-			os.Exit(0)
+			return
 		case *sdl.KeyboardEvent:
 			var keyByte, isPresent = keysBytes[et.Keysym.Sym]
 			if isPresent {
@@ -132,31 +166,6 @@ func loop() {
 					keyPressed[keyByte] = false
 				}
 			}
-		}
-	}
-	for {
-		select {
-		case <-tickerChannel:
-			return
-		case <-ticker.C:
-			var nextInstruction = (uint16(memory[programCounter]) << 8) | uint16(memory[programCounter+1])
-			programCounter += 2
-			decodeInstruction(nextInstruction)
-			for i := range height {
-				var str = ""
-				for j := range width {
-					if display[j][i] {
-						str += "*"
-					} else {
-						str += " "
-					}
-				}
-				fmt.Println(str)
-			}
-
-			cmd := exec.Command("cmd", "/c", "cls")
-			cmd.Stdout = os.Stdout
-			cmd.Run()
 		}
 	}
 }
