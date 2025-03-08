@@ -10,11 +10,13 @@ func (s *Stack) Push(data uint16) {
 	s.items = append(s.items, data)
 }
 
-func (s *Stack) Pop() {
+func (s *Stack) Pop() uint16 {
 	if s.IsEmpty() {
-		return
+		panic("stack is empty")
 	}
+	var res = s.items[len(s.items)-1]
 	s.items = s.items[:len(s.items)-1]
+	return res
 }
 
 func (s *Stack) Top() (uint16, error) {
