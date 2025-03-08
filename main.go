@@ -272,6 +272,8 @@ func decodeInstruction(instructionBytes uint16) {
 			Set_Sound_Timer_FX18(idx)
 		case 0x001E:
 			Add_To_Index_FX1E(idx)
+		case 0x0029:
+			Font_Character_FX29(idx)
 		case 0x0033:
 			Binary_Coded_Decimal_Conversion_FX33(idx)
 		case 0x0055:
@@ -609,4 +611,11 @@ func Set_Sound_Timer_FX18(idx int) {
 	var newValue = vRegisters[idx]
 	soundTimer = newValue
 	fmt.Printf("FX18_Set_Sound_Timer, old value: %d, currentSoundTimer: %d, newValue: %d\n", oldValue, soundTimer, newValue)
+}
+
+func Font_Character_FX29(idx int) {
+	var oldIndexRegister = indexRegister
+	var newAddress = uint16(vRegisters[idx] & 0x00F)
+	indexRegister = newAddress
+	fmt.Printf("FX29_Font_Character, idx: %d, old address: %d, new address: %d\n", idx, oldIndexRegister, newAddress)
 }
