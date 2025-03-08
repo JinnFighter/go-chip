@@ -7,6 +7,8 @@ import (
 	"os"
 	"os/exec"
 	"time"
+
+	"github.com/veandco/go-sdl2/sdl"
 )
 
 const timerDecreaseSpeed = 60.0
@@ -24,9 +26,28 @@ var programCounter uint16
 var addressStack extensions.Stack
 var delayTimer uint8
 var soundTimer uint8
+var keyPressed [16]bool
 var isRunning bool
 var ticker *time.Ticker
 var tickerChannel chan bool
+var keysBytes = map[sdl.Keycode]uint8{
+	sdl.K_1: 0x1,
+	sdl.K_2: 0x2,
+	sdl.K_3: 0x3,
+	sdl.K_4: 0xC,
+	sdl.K_q: 0x4,
+	sdl.K_w: 0x5,
+	sdl.K_e: 0x6,
+	sdl.K_r: 0xD,
+	sdl.K_a: 0x7,
+	sdl.K_s: 0x8,
+	sdl.K_d: 0x9,
+	sdl.K_f: 0xE,
+	sdl.K_z: 0xA,
+	sdl.K_x: 0x0,
+	sdl.K_c: 0xB,
+	sdl.K_v: 0xF,
+}
 
 var font = []uint8{
 	0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -48,6 +69,9 @@ var font = []uint8{
 }
 
 func main() {
+	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
+		panic(err)
+	}
 	var args = os.Args[1:]
 	data, err := os.ReadFile(args[0])
 	if err != nil {
@@ -94,16 +118,30 @@ func stopLoop() {
 
 func loop() {
 	fmt.Println("Enter loop")
+	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
+		switch et := event.(type) {
+		case *sdl.QuitEvent:
+			stopLoop()
+			os.Exit(0)
+		case *sdl.KeyboardEvent:
+			var keyByte, isPresent = keysBytes[et.Keysym.Sym]
+			if isPresent {
+				if et.Type == sdl.KEYDOWN {
+					keyPressed[keyByte] = true
+				} else if et.Type == sdl.KEYUP {
+					keyPressed[keyByte] = false
+				}
+			}
+		}
+	}
 	for {
 		select {
 		case <-tickerChannel:
 			return
 		case <-ticker.C:
-
 			var nextInstruction = (uint16(memory[programCounter]) << 8) | uint16(memory[programCounter+1])
 			programCounter += 2
 			decodeInstruction(nextInstruction)
-
 			for i := range height {
 				var str = ""
 				for j := range width {
@@ -202,6 +240,22 @@ func decodeInstruction(instructionBytes uint16) {
 		var yRegister = int((instructionBytes & 0x00F0) >> 4)
 		var height = int(instructionBytes & 0x000F)
 		Display_DXYN(xRegister, yRegister, height)
+	case 0xE000:
+		var idx = int((instructionBytes & 0x0F00) >> 8)
+		var checkedByte = (instructionBytes & 0x00F0) >> 4
+		switch checkedByte {
+		case 0x9:
+			Skip_If_Key_EX9E(idx)
+		case 0xA:
+			Skip_If_Not_Key_EXA1(idx)
+		}
+	case 0xF000:
+		var idx = int((instructionBytes & 0x0F00) >> 8)
+		var lastBytes = instructionBytes & 0x00FF
+		switch lastBytes {
+		case 0x000A:
+			Get_Key_FX0A(idx)
+		}
 	default:
 		fmt.Printf("Unknown Command\n")
 	}
@@ -403,4 +457,36 @@ func Random_CXNN(xIdx int, value uint8) {
 	var rand = uint8(rand.Intn(256))
 	var newValue = rand & value
 	vRegisters[xIdx] = newValue
+}
+
+func Skip_If_Key_EX9E(idx int) {
+	var keyVal = vRegisters[idx]
+	if keyPressed[keyVal] {
+		programCounter += 2
+	}
+}
+
+func Skip_If_Not_Key_EXA1(idx int) {
+	var keyVal = vRegisters[idx]
+	if !keyPressed[keyVal] {
+		programCounter += 2
+	}
+}
+
+func Get_Key_FX0A(idx int) {
+	var isPressed = false
+	var currentPressed = -1
+	for i := range len(keyPressed) {
+		if keyPressed[i] {
+			isPressed = true
+			currentPressed = i
+			break
+		}
+	}
+
+	if isPressed {
+		vRegisters[idx] = uint8(currentPressed)
+	} else {
+		programCounter -= 2
+	}
 }
