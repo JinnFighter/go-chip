@@ -151,7 +151,7 @@ func loop() {
 		}
 
 		window.UpdateSurface()
-		sdl.Delay(1000 / 60)
+		sdl.Delay(1000 / 700)
 	}
 }
 
