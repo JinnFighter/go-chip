@@ -6,6 +6,8 @@ import (
 	"math/rand"
 )
 
+const DisplayWidth = 64
+const DisplayHeight = 32
 const memorySize = 4096
 const width = 64
 const height = 32
@@ -45,10 +47,11 @@ type CpuInstance struct {
 	soundTimer     uint8
 	keyPressed     [keysCount]bool
 	isRunning      bool
+	instructions   map[uint16]IInstruction
 }
 
 func (cpu *CpuInstance) Init(romData []byte) {
-
+	cpu.initInstructions()
 	for i := range height {
 		for j := range width {
 			cpu.display[j][i] = false
@@ -135,6 +138,12 @@ func (cpu *CpuInstance) GetDisplay(i int, j int) bool {
 
 func (cpu *CpuInstance) decodeInstruction(instructionBytes uint16) {
 	var firstByte = instructionBytes & 0xF000
+	var instruction = cpu.instructions[firstByte]
+	if instruction != nil {
+		instruction.SetupValues(instructionBytes)
+		instruction.Execute(cpu)
+		return
+	}
 	switch firstByte {
 	case 0x0000:
 		var lastByte = instructionBytes & 0x000F
@@ -143,9 +152,6 @@ func (cpu *CpuInstance) decodeInstruction(instructionBytes uint16) {
 		} else {
 			cpu.Subroutine_00EE()
 		}
-	case 0x1000:
-		var jumpAddress = instructionBytes & 0x0FFF
-		cpu.Jump_1NNN(jumpAddress)
 	case 0x2000:
 		var address = instructionBytes & 0x0FFF
 		cpu.Subroutine_2NNN(address)
@@ -249,6 +255,11 @@ func (cpu *CpuInstance) decodeInstruction(instructionBytes uint16) {
 	}
 }
 
+func (cpu *CpuInstance) initInstructions() {
+	cpu.instructions = make(map[uint16]IInstruction)
+	cpu.instructions[0x1000] = &JumpInstruction{}
+}
+
 func (cpu *CpuInstance) ClearScreen_00E0() {
 	for i := range width {
 		for j := range height {
@@ -256,12 +267,6 @@ func (cpu *CpuInstance) ClearScreen_00E0() {
 		}
 	}
 	fmt.Printf("00E0_ClearScreen\n")
-}
-
-func (cpu *CpuInstance) Jump_1NNN(jumpAddress uint16) {
-	var oldAddress = cpu.programCounter
-	cpu.programCounter = jumpAddress
-	fmt.Printf("1NNN_Jump, old address: %d, new address: %d \n", oldAddress, jumpAddress)
 }
 
 func (cpu *CpuInstance) Set_6XNN(idx int, value uint8) {
