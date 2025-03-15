@@ -146,10 +146,6 @@ func (cpu *CpuInstance) decodeInstruction(instructionBytes uint16) {
 		return
 	}
 	switch firstByte {
-	case 0x6000:
-		var idx = int((instructionBytes & 0x0F00) >> 8)
-		var value = uint8(instructionBytes & 0x00FF)
-		cpu.Set_6XNN(idx, value)
 	case 0x7000:
 		var idx = int((instructionBytes & 0x0F00) >> 8)
 		var value = uint8(instructionBytes & 0x00FF)
@@ -232,13 +228,6 @@ func (cpu *CpuInstance) decodeInstruction(instructionBytes uint16) {
 	default:
 		fmt.Printf("Unknown Command\n")
 	}
-}
-
-func (cpu *CpuInstance) Set_6XNN(idx int, value uint8) {
-	var oldValue = cpu.vRegisters[idx]
-	var newValue = value
-	cpu.vRegisters[idx] = newValue
-	fmt.Printf("6XNN_Set, idx %d, OldValue %d, new value %d \n", idx, oldValue, newValue)
 }
 
 func (cpu *CpuInstance) Add_7XNN(idx int, value uint8) {
