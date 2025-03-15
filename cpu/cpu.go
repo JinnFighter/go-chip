@@ -147,9 +147,6 @@ func (cpu *CpuInstance) decodeInstruction(instructionBytes uint16) {
 		return
 	}
 	switch firstByte {
-	case 0xA000:
-		var value = instructionBytes & 0x0FFF
-		cpu.SetIndex_ANNN(value)
 	case 0xB000:
 		var address = instructionBytes & 0x0FFF
 		cpu.Jump_With_Offset_BNNN(address)
@@ -197,13 +194,6 @@ func (cpu *CpuInstance) decodeInstruction(instructionBytes uint16) {
 	default:
 		fmt.Printf("Unknown Command\n")
 	}
-}
-
-func (cpu *CpuInstance) SetIndex_ANNN(value uint16) {
-	var oldValue = cpu.indexRegister
-	var newValue = value
-	cpu.indexRegister = newValue
-	fmt.Printf("ANNN_SetIndex, oldValue %d, new value %d \n", oldValue, newValue)
 }
 
 func (cpu *CpuInstance) Display_DXYN(xRegister int, yRegister int, spriteHeight int) {

@@ -14,9 +14,17 @@ type InstrParamsXY struct {
 	yIdx int
 }
 
+type InstrParamsNNN struct {
+	value uint16
+}
+
 func (params *InstrParamsXY) SetupValues(instrBytes uint16) {
 	params.xIdx = int((instrBytes & 0x0F00) >> 8)
 	params.yIdx = int((instrBytes & 0x00F0) >> 4)
+}
+
+func (params *InstrParamsNNN) SetupValues(instrBytes uint16) {
+	params.value = instrBytes & 0x0FFF
 }
 
 func CreateInstructions() map[uint16]IInstruction {
@@ -46,6 +54,7 @@ func CreateInstructions() map[uint16]IInstruction {
 			0x000E: &Instr8XYEShiftLeft{},
 		}},
 		0x9000: &Instr9XY0SkipConditionally{},
+		0xA000: &InstrANNNSetIndex{},
 	}
 	return values
 }
