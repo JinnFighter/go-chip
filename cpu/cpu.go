@@ -16,6 +16,7 @@ const registersSize = 16
 const keysCount = 16
 const programStartAddress = 0x200
 const fontStartAddress = 0x50
+const vfIndex = 15
 
 var font = []uint8{
 	0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -146,30 +147,6 @@ func (cpu *CpuInstance) decodeInstruction(instructionBytes uint16) {
 		return
 	}
 	switch firstByte {
-	case 0x8000:
-		var xIdx = int((instructionBytes & 0x0F00) >> 8)
-		var yIdx = int((instructionBytes & 0x00F0) >> 4)
-		var lastByte = instructionBytes & 0x000F
-		switch lastByte {
-		case 0x0000:
-			cpu.Set_8XY0(xIdx, yIdx)
-		case 0x0001:
-			cpu.Binary_OR_8XY1(xIdx, yIdx)
-		case 0x0002:
-			cpu.Binary_AND_8XY2(xIdx, yIdx)
-		case 0x0003:
-			cpu.Binary_XOR_8XY3(xIdx, yIdx)
-		case 0x0004:
-			cpu.Add_8XY4(xIdx, yIdx)
-		case 0x0005:
-			cpu.Subtract_8XY5(xIdx, yIdx)
-		case 0x0006:
-			cpu.Shift_Right_8XY6(xIdx, yIdx)
-		case 0x0007:
-			cpu.Subtract_8XY7(xIdx, yIdx)
-		case 0x000E:
-			cpu.Shift_Left_8XYE(xIdx, yIdx)
-		}
 	case 0x9000:
 		var xIdx = int((instructionBytes & 0x0F00) >> 8)
 		var yIdx = int((instructionBytes & 0x00F0) >> 4)
@@ -265,111 +242,6 @@ func (cpu *CpuInstance) Skip_conditionally_9XY0(xIdx int, yIdx int) {
 	}
 
 	fmt.Printf("9XY0_Skip_conditionally, xIdx: %d, yIdx: %d, xRegisterValue: %b, yRegisterValue: %b \n", xIdx, yIdx, xValue, yValue)
-}
-
-func (cpu *CpuInstance) Set_8XY0(xIdx int, yIdx int) {
-	var xValue = cpu.vRegisters[xIdx]
-	var yValue = cpu.vRegisters[yIdx]
-	cpu.vRegisters[xIdx] = yValue
-
-	fmt.Printf("8XY0_Set, xIdx: %d, yIdx: %d, xRegisterValue: %b, yRegisterValue: %b, new xRegisterValue: %b \n", xIdx, yIdx, xValue, yValue, cpu.vRegisters[xIdx])
-}
-
-func (cpu *CpuInstance) Binary_OR_8XY1(xIdx int, yIdx int) {
-	var xValue = cpu.vRegisters[xIdx]
-	var yValue = cpu.vRegisters[yIdx]
-	var newValue = xValue | yValue
-	cpu.vRegisters[xIdx] = newValue
-
-	fmt.Printf("8XY1_Binary_OR, xIdx: %d, yIdx: %d, xValue: %b, yValue: %b, newValue: %b, newXRegisterValue: %b \n", xIdx, yIdx, xValue, yValue, newValue, cpu.vRegisters[xIdx])
-}
-
-func (cpu *CpuInstance) Binary_AND_8XY2(xIdx int, yIdx int) {
-	var xValue = cpu.vRegisters[xIdx]
-	var yValue = cpu.vRegisters[yIdx]
-	var newValue = xValue & yValue
-	cpu.vRegisters[xIdx] = newValue
-	fmt.Printf("8XY2_Binary_AND, xIdx: %d, yIdx: %d, xValue: %b, yValue: %b, newValue: %b, newXRegisterValue: %b \n", xIdx, yIdx, xValue, yValue, newValue, cpu.vRegisters[xIdx])
-}
-
-func (cpu *CpuInstance) Binary_XOR_8XY3(xIdx int, yIdx int) {
-	var xValue = cpu.vRegisters[xIdx]
-	var yValue = cpu.vRegisters[yIdx]
-	var newValue = xValue ^ yValue
-	cpu.vRegisters[xIdx] = newValue
-
-	fmt.Printf("8XY3_Binary_XOR, xIdx: %d, yIdx: %d, xValue: %b, yValue: %b, newValue: %b, newXRegisterValue: %b \n", xIdx, yIdx, xValue, yValue, newValue, cpu.vRegisters[xIdx])
-}
-
-func (cpu *CpuInstance) Add_8XY4(xIdx int, yIdx int) {
-	var xValue = cpu.vRegisters[xIdx]
-	var yValue = cpu.vRegisters[yIdx]
-	var isCarryFlagSet = (int(xValue) + int(yValue)) > 255
-	cpu.vRegisters[xIdx] = xValue + yValue
-
-	if isCarryFlagSet {
-		cpu.vRegisters[15] = 1
-	} else {
-		cpu.vRegisters[15] = 0
-	}
-}
-
-func (cpu *CpuInstance) Subtract_8XY5(xIdx int, yIdx int) {
-	var xValue = cpu.vRegisters[xIdx]
-	var yValue = cpu.vRegisters[yIdx]
-	var isCarryFlagSet = xValue >= yValue
-	cpu.vRegisters[xIdx] = xValue - yValue
-
-	if isCarryFlagSet {
-		cpu.vRegisters[15] = 1
-	} else {
-		cpu.vRegisters[15] = 0
-	}
-}
-
-func (cpu *CpuInstance) Subtract_8XY7(xIdx int, yIdx int) {
-	var xValue = cpu.vRegisters[xIdx]
-	var yValue = cpu.vRegisters[yIdx]
-	var isCarryFlagSet = yValue >= xValue
-	cpu.vRegisters[xIdx] = yValue - xValue
-
-	if isCarryFlagSet {
-		cpu.vRegisters[15] = 1
-	} else {
-		cpu.vRegisters[15] = 0
-	}
-}
-
-func (cpu *CpuInstance) Shift_Right_8XY6(xIdx int, yIdx int) {
-	var xValue = cpu.vRegisters[xIdx]
-	var newValue = xValue >> 1
-	var shiftedBit = xValue & 0x1
-	cpu.vRegisters[xIdx] = newValue
-	var isCarryFlagSet = shiftedBit > 0
-
-	if isCarryFlagSet {
-		cpu.vRegisters[15] = 1
-	} else {
-		cpu.vRegisters[15] = 0
-	}
-
-	fmt.Printf("8XY6, X = %d, Y = %d, xValue: %b, newValue: %b, shiftedBit: %b, isCarryFlagSet: %t, \n", xIdx, yIdx, xValue, newValue, shiftedBit, isCarryFlagSet)
-}
-
-func (cpu *CpuInstance) Shift_Left_8XYE(xIdx int, yIdx int) {
-	var xValue = cpu.vRegisters[xIdx]
-	var newValue = xValue << 1
-	var shiftedBit = xValue >> 7
-	cpu.vRegisters[xIdx] = newValue
-	var isCarryFlagSet = shiftedBit > 0
-
-	if isCarryFlagSet {
-		cpu.vRegisters[15] = 1
-	} else {
-		cpu.vRegisters[15] = 0
-	}
-
-	fmt.Printf("8XYE, X = %d, Y = %d, xValue: %b, newValue: %b, shiftedBit: %b, isCarryFlagSet: %t, \n", xIdx, yIdx, xValue, newValue, shiftedBit, isCarryFlagSet)
 }
 
 func (cpu *CpuInstance) Jump_With_Offset_BNNN(address uint16) {

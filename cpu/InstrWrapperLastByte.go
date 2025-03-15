@@ -8,6 +8,13 @@ type InstrWrapperLastByte struct {
 
 func (instr *InstrWrapperLastByte) SetupValues(instructionBytes uint16) {
 	instr.lastByte = instructionBytes & 0x000F
+	for _, value := range instr.values {
+		value.SetupValues(instructionBytes)
+	}
+
+	if instr.defaultInstr != nil {
+		instr.defaultInstr.SetupValues(instructionBytes)
+	}
 }
 
 func (instr *InstrWrapperLastByte) Execute(cpu *CpuInstance) {
