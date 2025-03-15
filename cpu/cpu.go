@@ -8,8 +8,6 @@ import (
 const DisplayWidth = 64
 const DisplayHeight = 32
 const memorySize = 4096
-const width = 64
-const height = 32
 const spriteWidth = 8
 const registersSize = 16
 const keysCount = 16
@@ -38,7 +36,7 @@ var font = []uint8{
 
 type CpuInstance struct {
 	memory         [memorySize]byte
-	display        [width][height]bool
+	display        [DisplayWidth][DisplayHeight]bool
 	vRegisters     [registersSize]uint8
 	indexRegister  uint16
 	programCounter uint16
@@ -53,9 +51,9 @@ type CpuInstance struct {
 func (cpu *CpuInstance) Init(romData []byte) {
 	var instructions = CreateInstructions()
 	cpu.instructions = instructions
-	for i := range height {
-		for j := range width {
-			cpu.display[j][i] = false
+	for i := range DisplayWidth {
+		for j := range DisplayHeight {
+			cpu.display[i][j] = false
 		}
 	}
 
