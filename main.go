@@ -3,24 +3,15 @@ package main
 import (
 	"fmt"
 	"go-chip/cpu"
+	"go-chip/display"
 	"os"
 	"time"
 
 	"github.com/veandco/go-sdl2/sdl"
 )
 
-const timerDecreaseSpeed = 60.0
-const instructionExecutionSpeed = 700.0
-
-const width = 64
-const height = 32
-
 var cpuInstance cpu.CpuInstance
-var displayRects [width][height]sdl.Rect
-var blackColor = sdl.Color{R: 0, G: 0, B: 0, A: 255}
-var whiteColor = sdl.Color{R: 255, G: 255, B: 255, A: 255}
-var window *sdl.Window
-var windowSurface *sdl.Surface
+var displayInstance display.DisplayInstance
 var isRunning bool
 var keysBytes = map[sdl.Keycode]uint8{
 	sdl.K_1: 0x1,
@@ -53,19 +44,12 @@ func main() {
 
 	cpuInstance.Init(data)
 
-	window, _ = sdl.CreateWindow("Go-Chip by JinnFighter", sdl.WINDOWPOS_CENTERED, sdl.WINDOWPOS_CENTERED, 640, 320, sdl.WINDOW_SHOWN)
-	windowSurface, _ = window.GetSurface()
-	windowSurface.FillRect(nil, 0)
-
-	for i := range height {
-		for j := range width {
-			displayRects[j][i] = sdl.Rect{X: int32(j * 10), Y: int32(i * 10), W: 7, H: 7}
-		}
-	}
+	displayInstance.Init(&cpuInstance)
 
 	startLoop()
-
-	window.Destroy()
+	stopLoop()
+	displayInstance.Terminate()
+	cpuInstance.Terminate()
 }
 
 func startLoop() {
@@ -98,17 +82,7 @@ func loop() {
 		}
 		cpuInstance.ExecuteLoopStep()
 
-		for i := range height {
-			for j := range width {
-				if cpuInstance.GetDisplay(j, i) {
-					windowSurface.FillRect(&displayRects[j][i], whiteColor.Uint32())
-				} else {
-					windowSurface.FillRect(&displayRects[j][i], blackColor.Uint32())
-				}
-			}
-		}
-
-		window.UpdateSurface()
+		displayInstance.Draw()
 	}
 }
 
