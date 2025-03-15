@@ -146,10 +146,6 @@ func (cpu *CpuInstance) decodeInstruction(instructionBytes uint16) {
 		return
 	}
 	switch firstByte {
-	case 0x5000:
-		var xIdx = int((instructionBytes & 0x0F00) >> 8)
-		var yIdx = int((instructionBytes & 0x00F0) >> 4)
-		cpu.Skip_conditionally_5XY0(xIdx, yIdx)
 	case 0x6000:
 		var idx = int((instructionBytes & 0x0F00) >> 8)
 		var value = uint8(instructionBytes & 0x00FF)
@@ -282,16 +278,6 @@ func (cpu *CpuInstance) Display_DXYN(xRegister int, yRegister int, spriteHeight 
 	}
 
 	fmt.Printf("DXYN_Display at xReg %d, yReg %d, height %d \n", xRegister, yRegister, spriteHeight)
-}
-
-func (cpu *CpuInstance) Skip_conditionally_5XY0(xIdx int, yIdx int) {
-	var xValue = cpu.vRegisters[xIdx]
-	var yValue = cpu.vRegisters[yIdx]
-	if xValue == yValue {
-		cpu.programCounter += 2
-	}
-
-	fmt.Printf("5XY0_Skip_conditionally, xIdx: %d, yIdx: %d, xRegisterValue: %b, yRegisterValue: %b \n", xIdx, yIdx, xValue, yValue)
 }
 
 func (cpu *CpuInstance) Skip_conditionally_9XY0(xIdx int, yIdx int) {
