@@ -146,11 +146,6 @@ func (cpu *CpuInstance) decodeInstruction(instructionBytes uint16) {
 		return
 	}
 	switch firstByte {
-	case 0xD000:
-		var xRegister = int((instructionBytes & 0x0F00) >> 8)
-		var yRegister = int((instructionBytes & 0x00F0) >> 4)
-		var height = int(instructionBytes & 0x000F)
-		cpu.Display_DXYN(xRegister, yRegister, height)
 	case 0xE000:
 		var idx = int((instructionBytes & 0x0F00) >> 8)
 		var checkedByte = (instructionBytes & 0x00F0) >> 4
@@ -186,30 +181,6 @@ func (cpu *CpuInstance) decodeInstruction(instructionBytes uint16) {
 	default:
 		fmt.Printf("Unknown Command\n")
 	}
-}
-
-func (cpu *CpuInstance) Display_DXYN(xRegister int, yRegister int, spriteHeight int) {
-	var x = int(cpu.vRegisters[xRegister] & (width - 1))
-	var y = int(cpu.vRegisters[yRegister] & (height - 1))
-	cpu.vRegisters[15] = 0
-
-	for col := 0; col < spriteWidth; col++ {
-		for row := 0; row < int(spriteHeight); row++ {
-			px := int(x) + col
-			py := int(y) + row
-			bit := (cpu.memory[cpu.indexRegister+uint16(row)] & (1 << uint(spriteWidth-1-col))) != 0
-			if px < width && py < height && px >= 0 && py >= 0 {
-				src := cpu.display[px][py]
-				dst := bit != src // Да, оператор XOR с булевыми значениями не работает
-				cpu.display[px][py] = dst
-				if src && !dst {
-					cpu.vRegisters[15] = 1
-				}
-			}
-		}
-	}
-
-	fmt.Printf("DXYN_Display at xReg %d, yReg %d, height %d \n", xRegister, yRegister, spriteHeight)
 }
 
 func (cpu *CpuInstance) Skip_If_Key_EX9E(idx int) {

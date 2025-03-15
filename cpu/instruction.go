@@ -26,6 +26,12 @@ type InstrParamsXNN struct {
 	value uint8
 }
 
+type InstrParamsXYN struct {
+	x int
+	y int
+	n int
+}
+
 func (params *InstrParamsEmpty) SetupValues(instrBytes uint16) {
 }
 
@@ -41,6 +47,12 @@ func (params *InstrParamsNNN) SetupValues(instrBytes uint16) {
 func (params *InstrParamsXNN) SetupValues(instrBytes uint16) {
 	params.x = int((instrBytes & 0x0F00) >> 8)
 	params.value = uint8(instrBytes & 0x00FF)
+}
+
+func (params *InstrParamsXYN) SetupValues(instrBytes uint16) {
+	params.x = int((instrBytes & 0x0F00) >> 8)
+	params.y = int((instrBytes & 0x00F0) >> 4)
+	params.n = int(instrBytes & 0x000F)
 }
 
 func CreateInstructions() map[uint16]IInstruction {
@@ -73,6 +85,7 @@ func CreateInstructions() map[uint16]IInstruction {
 		0xA000: &InstrANNNSetIndex{},
 		0xB000: &InstrBNNNJumpWithOffset{},
 		0xC000: &InstrCXNNRandom{},
+		0xD000: &InstrDXYNDisplay{},
 	}
 	return values
 }
