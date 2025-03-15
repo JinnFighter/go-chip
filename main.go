@@ -76,13 +76,15 @@ func loop() {
 	fmt.Println("Enter loop")
 	for range time.Tick(time.Duration(1000 / 60 * time.Millisecond)) {
 		cpuInstance.ExecuteTimersUpdate()
+		cpuInstance.ResetRedraw()
 		inputLoop()
 		if !isRunning {
 			return
 		}
 		cpuInstance.ExecuteLoopStep()
-
-		displayInstance.Draw()
+		if cpuInstance.IsRedrawRequired() {
+			displayInstance.Draw()
+		}
 	}
 }
 

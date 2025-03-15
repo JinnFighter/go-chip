@@ -14,5 +14,6 @@ func (instr *Instr00E0ClearScreen) Execute(cpu *CpuInstance) {
 			cpu.display[i][j] = false
 		}
 	}
+	cpu.IsRedraw = true
 	fmt.Printf("00E0_ClearScreen \n")
 }

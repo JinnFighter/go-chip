@@ -29,5 +29,6 @@ func (instr *InstrDXYNDisplay) Execute(cpu *CpuInstance) {
 		}
 	}
 
+	cpu.IsRedraw = true
 	fmt.Printf("DXYN_Display at xReg %d, yReg %d, height %d \n", instr.x, instr.y, instr.n)
 }

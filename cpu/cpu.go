@@ -46,6 +46,7 @@ type CpuInstance struct {
 	keyPressed     [keysCount]bool
 	isRunning      bool
 	instructions   map[uint16]IInstruction
+	IsRedraw       bool
 }
 
 func (cpu *CpuInstance) Init(romData []byte) {
@@ -139,6 +140,14 @@ func (cpu *CpuInstance) ExecuteLoopStep() {
 
 func (cpu *CpuInstance) GetDisplay(i int, j int) bool {
 	return cpu.display[i][j]
+}
+
+func (cpu *CpuInstance) IsRedrawRequired() bool {
+	return cpu.IsRedraw
+}
+
+func (cpu *CpuInstance) ResetRedraw() {
+	cpu.IsRedraw = false
 }
 
 func (cpu *CpuInstance) decodeInstruction(instructionBytes uint16) IInstruction {
