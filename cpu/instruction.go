@@ -32,6 +32,10 @@ type InstrParamsXYN struct {
 	n int
 }
 
+type InstrParamsX struct {
+	x int
+}
+
 func (params *InstrParamsEmpty) SetupValues(instrBytes uint16) {
 }
 
@@ -53,6 +57,10 @@ func (params *InstrParamsXYN) SetupValues(instrBytes uint16) {
 	params.x = int((instrBytes & 0x0F00) >> 8)
 	params.y = int((instrBytes & 0x00F0) >> 4)
 	params.n = int(instrBytes & 0x000F)
+}
+
+func (params *InstrParamsX) SetupValues(instrBytes uint16) {
+	params.x = int((instrBytes & 0x0F00) >> 8)
 }
 
 func CreateInstructions() map[uint16]IInstruction {
@@ -86,6 +94,10 @@ func CreateInstructions() map[uint16]IInstruction {
 		0xB000: &InstrBNNNJumpWithOffset{},
 		0xC000: &InstrCXNNRandom{},
 		0xD000: &InstrDXYNDisplay{},
+		0xE000: &InstrWrapperByte3{values: map[uint16]IInstruction{
+			0x9: &InstrEX9ESkipIfKey{},
+			0xA: &InstrEXA1SkipIfNotKey{},
+		}},
 	}
 	return values
 }

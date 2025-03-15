@@ -146,15 +146,6 @@ func (cpu *CpuInstance) decodeInstruction(instructionBytes uint16) {
 		return
 	}
 	switch firstByte {
-	case 0xE000:
-		var idx = int((instructionBytes & 0x0F00) >> 8)
-		var checkedByte = (instructionBytes & 0x00F0) >> 4
-		switch checkedByte {
-		case 0x9:
-			cpu.Skip_If_Key_EX9E(idx)
-		case 0xA:
-			cpu.Skip_If_Not_Key_EXA1(idx)
-		}
 	case 0xF000:
 		var idx = int((instructionBytes & 0x0F00) >> 8)
 		var lastBytes = instructionBytes & 0x00FF
@@ -181,24 +172,6 @@ func (cpu *CpuInstance) decodeInstruction(instructionBytes uint16) {
 	default:
 		fmt.Printf("Unknown Command\n")
 	}
-}
-
-func (cpu *CpuInstance) Skip_If_Key_EX9E(idx int) {
-	var keyVal = cpu.vRegisters[idx]
-	if cpu.keyPressed[keyVal] {
-		cpu.programCounter += 2
-	}
-
-	fmt.Printf("EX9E_Skip_If_Key, idx: %d, keyVal: %d, isPressed: %t\n", idx, keyVal, cpu.keyPressed[keyVal])
-}
-
-func (cpu *CpuInstance) Skip_If_Not_Key_EXA1(idx int) {
-	var keyVal = cpu.vRegisters[idx]
-	if !cpu.keyPressed[keyVal] {
-		cpu.programCounter += 2
-	}
-
-	fmt.Printf("EXA1_Skip_If_Not_Key, idx: %d, keyVal: %d, isPressed: %t\n", idx, keyVal, cpu.keyPressed[keyVal])
 }
 
 func (cpu *CpuInstance) Get_Key_FX0A(idx int) {
