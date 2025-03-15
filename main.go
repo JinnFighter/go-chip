@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go-chip/cpu"
 	"os"
+	"time"
 
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -89,8 +90,7 @@ func stopLoop() {
 
 func loop() {
 	fmt.Println("Enter loop")
-
-	for {
+	for range time.Tick(time.Duration(1000 / 60 * time.Millisecond)) {
 		cpuInstance.ExecuteTimersUpdate()
 		inputLoop()
 		if !isRunning {
@@ -109,7 +109,6 @@ func loop() {
 		}
 
 		window.UpdateSurface()
-		sdl.Delay(1000 / 700)
 	}
 }
 

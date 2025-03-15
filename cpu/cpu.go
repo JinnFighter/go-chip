@@ -8,8 +8,6 @@ import (
 const DisplayWidth = 64
 const DisplayHeight = 32
 const memorySize = 4096
-const width = 64
-const height = 32
 const spriteWidth = 8
 const registersSize = 16
 const keysCount = 16
@@ -38,7 +36,7 @@ var font = []uint8{
 
 type CpuInstance struct {
 	memory         [memorySize]byte
-	display        [width][height]bool
+	display        [DisplayWidth][DisplayHeight]bool
 	vRegisters     [registersSize]uint8
 	indexRegister  uint16
 	programCounter uint16
@@ -53,9 +51,9 @@ type CpuInstance struct {
 func (cpu *CpuInstance) Init(romData []byte) {
 	var instructions = CreateInstructions()
 	cpu.instructions = instructions
-	for i := range height {
-		for j := range width {
-			cpu.display[j][i] = false
+	for i := range DisplayWidth {
+		for j := range DisplayHeight {
+			cpu.display[i][j] = false
 		}
 	}
 
@@ -130,20 +128,21 @@ func (cpu *CpuInstance) ExecuteTimersUpdate() {
 func (cpu *CpuInstance) ExecuteLoopStep() {
 	var nextInstruction = (uint16(cpu.memory[cpu.programCounter]) << 8) | uint16(cpu.memory[cpu.programCounter+1])
 	cpu.programCounter += 2
-	cpu.decodeInstruction(nextInstruction)
+	var instruction = cpu.decodeInstruction(nextInstruction)
+	if instruction != nil {
+		instruction.SetupValues(nextInstruction)
+		instruction.Execute(cpu)
+	} else {
+		fmt.Println("unknown command")
+	}
 }
 
 func (cpu *CpuInstance) GetDisplay(i int, j int) bool {
 	return cpu.display[i][j]
 }
 
-func (cpu *CpuInstance) decodeInstruction(instructionBytes uint16) {
+func (cpu *CpuInstance) decodeInstruction(instructionBytes uint16) IInstruction {
 	var firstByte = instructionBytes & 0xF000
 	var instruction = cpu.instructions[firstByte]
-	if instruction != nil {
-		instruction.SetupValues(instructionBytes)
-		instruction.Execute(cpu)
-	} else {
-		fmt.Println("Unknown command")
-	}
+	return instruction
 }
