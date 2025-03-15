@@ -146,9 +146,6 @@ func (cpu *CpuInstance) decodeInstruction(instructionBytes uint16) {
 		return
 	}
 	switch firstByte {
-	case 0x2000:
-		var address = instructionBytes & 0x0FFF
-		cpu.Subroutine_2NNN(address)
 	case 0x3000:
 		var idx = int((instructionBytes & 0x0F00) >> 8)
 		var value = uint8(instructionBytes & 0x00FF)
@@ -293,12 +290,6 @@ func (cpu *CpuInstance) Display_DXYN(xRegister int, yRegister int, spriteHeight 
 	}
 
 	fmt.Printf("DXYN_Display at xReg %d, yReg %d, height %d \n", xRegister, yRegister, spriteHeight)
-}
-
-func (cpu *CpuInstance) Subroutine_2NNN(value uint16) {
-	cpu.addressStack.Push(cpu.programCounter)
-	cpu.programCounter = value
-	fmt.Printf("2NNN_Subroutine, value: %b, stackCount: %d \n", value, cpu.addressStack.Count())
 }
 
 func (cpu *CpuInstance) Skip_conditionally_3XNN(idx int, value uint8) {

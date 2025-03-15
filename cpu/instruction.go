@@ -14,6 +14,7 @@ func CreateInstructions() map[uint16]IInstruction {
 			defaultInstr: &Instr00EESubroutine{},
 		},
 		0x1000: &Instr1NNNJump{},
+		0x2000: &Instr2NNNSubroutine{},
 	}
 	return values
 }
