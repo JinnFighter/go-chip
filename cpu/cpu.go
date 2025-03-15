@@ -128,20 +128,21 @@ func (cpu *CpuInstance) ExecuteTimersUpdate() {
 func (cpu *CpuInstance) ExecuteLoopStep() {
 	var nextInstruction = (uint16(cpu.memory[cpu.programCounter]) << 8) | uint16(cpu.memory[cpu.programCounter+1])
 	cpu.programCounter += 2
-	cpu.decodeInstruction(nextInstruction)
+	var instruction = cpu.decodeInstruction(nextInstruction)
+	if instruction != nil {
+		instruction.SetupValues(nextInstruction)
+		instruction.Execute(cpu)
+	} else {
+		fmt.Println("unknown command")
+	}
 }
 
 func (cpu *CpuInstance) GetDisplay(i int, j int) bool {
 	return cpu.display[i][j]
 }
 
-func (cpu *CpuInstance) decodeInstruction(instructionBytes uint16) {
+func (cpu *CpuInstance) decodeInstruction(instructionBytes uint16) IInstruction {
 	var firstByte = instructionBytes & 0xF000
 	var instruction = cpu.instructions[firstByte]
-	if instruction != nil {
-		instruction.SetupValues(instructionBytes)
-		instruction.Execute(cpu)
-	} else {
-		fmt.Println("Unknown command")
-	}
+	return instruction
 }
