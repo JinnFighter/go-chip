@@ -3,7 +3,6 @@ package cpu
 import (
 	"fmt"
 	"go-chip/extensions"
-	"math/rand"
 )
 
 const DisplayWidth = 64
@@ -147,10 +146,6 @@ func (cpu *CpuInstance) decodeInstruction(instructionBytes uint16) {
 		return
 	}
 	switch firstByte {
-	case 0xC000:
-		var idx = int((instructionBytes & 0x0F00) >> 8)
-		var value = uint8(instructionBytes & 0x00FF)
-		cpu.Random_CXNN(idx, value)
 	case 0xD000:
 		var xRegister = int((instructionBytes & 0x0F00) >> 8)
 		var yRegister = int((instructionBytes & 0x00F0) >> 4)
@@ -215,12 +210,6 @@ func (cpu *CpuInstance) Display_DXYN(xRegister int, yRegister int, spriteHeight 
 	}
 
 	fmt.Printf("DXYN_Display at xReg %d, yReg %d, height %d \n", xRegister, yRegister, spriteHeight)
-}
-
-func (cpu *CpuInstance) Random_CXNN(xIdx int, value uint8) {
-	var rand = uint8(rand.Intn(256))
-	var newValue = rand & value
-	cpu.vRegisters[xIdx] = newValue
 }
 
 func (cpu *CpuInstance) Skip_If_Key_EX9E(idx int) {
