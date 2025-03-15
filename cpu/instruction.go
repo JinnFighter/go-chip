@@ -4,3 +4,16 @@ type IInstruction interface {
 	SetupValues(instructionBytes uint16)
 	Execute(cpu *CpuInstance)
 }
+
+func CreateInstructions() map[uint16]IInstruction {
+	var values = map[uint16]IInstruction{
+		0x0000: &InstrWrapperLastByte{
+			values: map[uint16]IInstruction{
+				0x0000: &Instr00E0ClearScreen{},
+			},
+			defaultInstr: &Instr00EESubroutine{},
+		},
+		0x1000: &Instr1NNNJump{},
+	}
+	return values
+}
