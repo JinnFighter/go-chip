@@ -45,6 +45,7 @@ func CreateInstructions() map[uint16]IInstruction {
 			0x0007: &Instr8XY7Subtract{},
 			0x000E: &Instr8XYEShiftLeft{},
 		}},
+		0x9000: &Instr9XY0SkipConditionally{},
 	}
 	return values
 }
