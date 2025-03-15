@@ -19,6 +19,7 @@ func CreateInstructions() map[uint16]IInstruction {
 		0x4000: &Instr4XNNSkipConditionally{},
 		0x5000: &Instr5XY0SkipConditionally{},
 		0x6000: &Instr6XNNSet{},
+		0x7000: &Instr7XNNAdd{},
 	}
 	return values
 }
