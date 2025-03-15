@@ -147,9 +147,6 @@ func (cpu *CpuInstance) decodeInstruction(instructionBytes uint16) {
 		return
 	}
 	switch firstByte {
-	case 0xB000:
-		var address = instructionBytes & 0x0FFF
-		cpu.Jump_With_Offset_BNNN(address)
 	case 0xC000:
 		var idx = int((instructionBytes & 0x0F00) >> 8)
 		var value = uint8(instructionBytes & 0x00FF)
@@ -218,10 +215,6 @@ func (cpu *CpuInstance) Display_DXYN(xRegister int, yRegister int, spriteHeight 
 	}
 
 	fmt.Printf("DXYN_Display at xReg %d, yReg %d, height %d \n", xRegister, yRegister, spriteHeight)
-}
-
-func (cpu *CpuInstance) Jump_With_Offset_BNNN(address uint16) {
-	cpu.programCounter = address + uint16(cpu.vRegisters[0])
 }
 
 func (cpu *CpuInstance) Random_CXNN(xIdx int, value uint8) {

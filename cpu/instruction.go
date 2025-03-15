@@ -55,6 +55,7 @@ func CreateInstructions() map[uint16]IInstruction {
 		}},
 		0x9000: &Instr9XY0SkipConditionally{},
 		0xA000: &InstrANNNSetIndex{},
+		0xB000: &InstrBNNNJumpWithOffset{},
 	}
 	return values
 }
