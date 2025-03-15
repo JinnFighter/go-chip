@@ -98,6 +98,17 @@ func CreateInstructions() map[uint16]IInstruction {
 			0x9: &InstrEX9ESkipIfKey{},
 			0xA: &InstrEXA1SkipIfNotKey{},
 		}},
+		0xF000: &InstrWrapperByte34{values: map[uint16]IInstruction{
+			0x000A: &InstrFX0AGetKey{},
+			0x0007: &InstrFX07GetDelayTimer{},
+			0x0015: &InstrFX15SetDelayTimer{},
+			0x0018: &InstrFX18SetSoundTimer{},
+			0x001E: &InstrFX1EAddToIndex{},
+			0x0029: &InstrFX29FontChar{},
+			0x0033: &InstrFX33BCDC{},
+			0x0055: &InstrFX55StoreMemory{},
+			0x0065: &InstrFX65LoadMemory{},
+		}},
 	}
 	return values
 }
