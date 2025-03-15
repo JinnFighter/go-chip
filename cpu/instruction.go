@@ -9,22 +9,38 @@ type InstrParams interface {
 	SetupValues(instrBytes uint16)
 }
 
+type InstrParamsEmpty struct {
+}
+
 type InstrParamsXY struct {
-	xIdx int
-	yIdx int
+	x int
+	y int
 }
 
 type InstrParamsNNN struct {
 	value uint16
 }
 
+type InstrParamsXNN struct {
+	x     int
+	value uint8
+}
+
+func (params *InstrParamsEmpty) SetupValues(instrBytes uint16) {
+}
+
 func (params *InstrParamsXY) SetupValues(instrBytes uint16) {
-	params.xIdx = int((instrBytes & 0x0F00) >> 8)
-	params.yIdx = int((instrBytes & 0x00F0) >> 4)
+	params.x = int((instrBytes & 0x0F00) >> 8)
+	params.y = int((instrBytes & 0x00F0) >> 4)
 }
 
 func (params *InstrParamsNNN) SetupValues(instrBytes uint16) {
 	params.value = instrBytes & 0x0FFF
+}
+
+func (params *InstrParamsXNN) SetupValues(instrBytes uint16) {
+	params.x = int((instrBytes & 0x0F00) >> 8)
+	params.value = uint8(instrBytes & 0x00FF)
 }
 
 func CreateInstructions() map[uint16]IInstruction {

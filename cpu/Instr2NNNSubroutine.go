@@ -3,11 +3,7 @@ package cpu
 import "fmt"
 
 type Instr2NNNSubroutine struct {
-	value uint16
-}
-
-func (instr *Instr2NNNSubroutine) SetupValues(instructionBytes uint16) {
-	instr.value = instructionBytes & 0x0FFF
+	InstrParamsNNN
 }
 
 func (instr *Instr2NNNSubroutine) Execute(cpu *CpuInstance) {

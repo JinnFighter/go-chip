@@ -5,10 +5,7 @@ import (
 )
 
 type Instr00E0ClearScreen struct {
-}
-
-func (instr *Instr00E0ClearScreen) SetupValues(instructionBytes uint16) {
-
+	InstrParamsEmpty
 }
 
 func (instr *Instr00E0ClearScreen) Execute(cpu *CpuInstance) {

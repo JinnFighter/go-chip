@@ -5,10 +5,7 @@ import (
 )
 
 type Instr00EESubroutine struct {
-}
-
-func (instr *Instr00EESubroutine) SetupValues(instructionBytes uint16) {
-
+	InstrParamsEmpty
 }
 
 func (instr *Instr00EESubroutine) Execute(cpu *CpuInstance) {

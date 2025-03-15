@@ -7,12 +7,12 @@ type Instr8XY4Add struct {
 }
 
 func (instr *Instr8XY4Add) Execute(cpu *CpuInstance) {
-	var xValue = cpu.vRegisters[instr.xIdx]
-	var yValue = cpu.vRegisters[instr.yIdx]
+	var xValue = cpu.vRegisters[instr.x]
+	var yValue = cpu.vRegisters[instr.y]
 	var isCarryFlagSet = (int(xValue) + int(yValue)) > 255
-	var oldValue = cpu.vRegisters[instr.xIdx]
+	var oldValue = cpu.vRegisters[instr.x]
 	var newValue = xValue + yValue
-	cpu.vRegisters[instr.xIdx] = newValue
+	cpu.vRegisters[instr.x] = newValue
 
 	if isCarryFlagSet {
 		cpu.vRegisters[vfIndex] = 1
